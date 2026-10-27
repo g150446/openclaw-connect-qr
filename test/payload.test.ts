@@ -9,7 +9,7 @@ test("round-trips a payload, escaping reserved characters", () => {
     auth: "token" as const,
     secret: "a&b=c?d/e+f g",
     agent: "openclaw/main",
-    name: "kazami-mac",
+    name: "my-mac",
   };
   const uri = buildConnectUri(payload);
   assert.ok(uri.startsWith("openclaw-connect://http?v=1&"));
