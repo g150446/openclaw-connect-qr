@@ -1,0 +1,33 @@
+{
+  "name": "@g150446/openclaw-connect-qr",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenClaw plugin: show a QR code that lets a phone app connect to this Gateway's HTTP API (/v1/chat/completions, /tools/invoke).",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test test/*.test.ts"
+  },
+  "dependencies": {
+    "qrcode-terminal": "0.12.0"
+  },
+  "devDependencies": {
+    "openclaw": "2026.9.4",
+    "typescript": "^5.7.0",
+    "@types/node": "^24.0.0"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.9.4"
+  },
+  "openclaw": {
+    "extensions": ["./src/index.ts"],
+    "compat": {
+      "pluginApi": ">=2026.9.4",
+      "minGatewayVersion": "2026.9.4"
+    },
+    "build": {
+      "openclawVersion": "2026.9.4",
+      "pluginSdkVersion": "2026.9.4"
+    }
+  }
+}

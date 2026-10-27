@@ -1,0 +1,18 @@
+{
+  "id": "connect-qr",
+  "name": "Connect QR",
+  "description": "Show a QR code that lets a phone app connect to this Gateway's HTTP API.",
+  "categories": ["tools"],
+  "cliCommands": [
+    {
+      "name": "connect-qr",
+      "description": "Show a QR code for connecting a phone app to this Gateway's HTTP API",
+      "hasSubcommands": false
+    }
+  ],
+  "configSchema": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  }
+}
