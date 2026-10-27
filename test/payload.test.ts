@@ -34,6 +34,7 @@ test("rejects other schemes, versions and missing fields without echoing the sec
 
 const probe = (overrides: Partial<HostProbe> = {}): HostProbe => ({
   tailscaleIp: () => "100.64.0.1",
+  tailscaleDnsName: () => "my-mac.tailnet.ts.net",
   lanIp: () => "192.168.1.10",
   env: {},
   ...overrides,
@@ -68,4 +69,12 @@ test("warns on a loopback bind and honours --url", () => {
   const loopback = { ...enabled, bind: "loopback" };
   assert.equal(resolveConnect(loopback, {}, probe()).warnings.length, 1);
   assert.equal(resolveConnect(loopback, { url: "http://mac.local:18789" }, probe()).payload.url, "http://mac.local:18789");
+});
+
+test("uses the MagicDNS HTTPS name when Tailscale Serve fronts a loopback Gateway", () => {
+  const serve = { ...enabled, bind: "loopback", tailscale: { mode: "serve" } };
+  const { payload, warnings } = resolveConnect(serve, {}, probe());
+  assert.equal(payload.url, "https://my-mac.tailnet.ts.net");
+  assert.deepEqual(warnings, []);
+  assert.throws(() => resolveConnect(serve, {}, probe({ tailscaleDnsName: () => undefined })), SetupError);
 });

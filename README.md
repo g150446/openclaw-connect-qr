@@ -34,8 +34,9 @@ The command checks:
 - `gateway.auth.mode` is `token` or `password`. The secret is read from
   `gateway.auth.token` or `gateway.auth.password`: a plain value, an env
   SecretRef, or `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`.
-- The address the phone uses. In order: `--url`, `customBindHost`, the
-  Tailscale IPv4, then a private LAN IPv4. If `gateway.bind` is `loopback` (the
+- The address the phone uses. In order: `--url`; with
+  `gateway.tailscale.mode` `serve` (or `funnel`), `https://<MagicDNS name>`;
+  then `customBindHost`, the Tailscale IPv4, and a private LAN IPv4. If `gateway.bind` is `loopback` (the
   default), the phone cannot reach the Gateway, so the command warns and shows
   how to switch to `tailnet`.
 

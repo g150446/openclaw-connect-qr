@@ -6,6 +6,7 @@ export type GatewaySlice = {
   bind?: string;
   customBindHost?: string;
   tls?: { enabled?: boolean };
+  tailscale?: { mode?: string };
   auth?: {
     mode?: string;
     token?: unknown;
@@ -22,6 +23,8 @@ export type ResolveOptions = {
 
 export type HostProbe = {
   tailscaleIp: () => string | undefined;
+  /** MagicDNS name of this machine, e.g. `mac.tailnet.ts.net`. */
+  tailscaleDnsName: () => string | undefined;
   lanIp: () => string | undefined;
   env: Record<string, string | undefined>;
 };
@@ -84,6 +87,22 @@ function secretValue(input: unknown, env: Record<string, string | undefined>): s
 }
 
 function guessUrl(g: GatewaySlice, probe: HostProbe, warnings: string[]): string {
+  // Managed Serve/Funnel keeps the Gateway on loopback and fronts it with HTTPS on the MagicDNS name.
+  const tailscaleMode = g.tailscale?.mode;
+  if (tailscaleMode === "serve" || tailscaleMode === "funnel") {
+    const dnsName = probe.tailscaleDnsName();
+    if (!dnsName) {
+      throw new SetupError(
+        `gateway.tailscale.mode is "${tailscaleMode}" but this Mac's Tailscale name could not be read. ` +
+          "Pass it with --url https://<name>.ts.net",
+      );
+    }
+    if (tailscaleMode === "funnel") {
+      warnings.push("gateway.tailscale.mode is \"funnel\": this URL is reachable from the public internet.");
+    }
+    return `https://${dnsName}`;
+  }
+
   const scheme = g.tls?.enabled ? "https" : "http";
   const port = g.port ?? DEFAULT_PORT;
   const bind = g.bind ?? "loopback";

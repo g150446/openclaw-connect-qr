@@ -72,16 +72,18 @@ async function run(gateway: GatewaySlice | undefined, options: CliOptions): Prom
 function hostProbe(): HostProbe {
   return {
     tailscaleIp: () => {
-      for (const bin of ["tailscale", "/Applications/Tailscale.app/Contents/MacOS/Tailscale"]) {
-        try {
-          const out = execFileSync(bin, ["ip", "-4"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 5_000 });
-          const ip = out.split("\n").map((line) => line.trim()).find(Boolean);
-          if (ip) return ip;
-        } catch {
-          // Not installed or not logged in; try the next one.
-        }
+      const out = tailscale(["ip", "-4"]);
+      return out?.split("\n").map((line) => line.trim()).find(Boolean);
+    },
+    tailscaleDnsName: () => {
+      const out = tailscale(["status", "--json"]);
+      if (!out) return undefined;
+      try {
+        const name = (JSON.parse(out) as { Self?: { DNSName?: string } }).Self?.DNSName;
+        return name?.replace(/\.$/, "") || undefined;
+      } catch {
+        return undefined;
       }
-      return undefined;
     },
     lanIp: () => {
       for (const addresses of Object.values(networkInterfaces())) {
@@ -93,6 +95,17 @@ function hostProbe(): HostProbe {
     },
     env: process.env,
   };
+}
+
+function tailscale(args: string[]): string | undefined {
+  for (const bin of ["tailscale", "/Applications/Tailscale.app/Contents/MacOS/Tailscale"]) {
+    try {
+      return execFileSync(bin, args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 5_000 });
+    } catch {
+      // Not installed or not logged in; try the next one.
+    }
+  }
+  return undefined;
 }
 
 function isPrivateIpv4(ip: string): boolean {
